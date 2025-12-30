@@ -1,0 +1,42 @@
+<header class="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+            <a routerLink="/" class="flex items-center gap-2">
+                <span class="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    PredictFootball
+                </span>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="hidden md:flex items-center gap-6">
+                <a  routerLink="/matches"
+                    routerLinkActive="text-blue-600 dark:text-blue-400 font-semibold"
+                    class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    Matches
+                </a>
+                <a  routerLink="/standings"
+                    routerLinkActive="text-blue-600 dark:text-blue-400 font-semibold"
+                    class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    Standings
+                </a>
+            </nav>
+
+            <!-- Theme Toggle -->
+            <app-theme-toggle />
+
+            <!-- Mobile Navigation -->
+            <nav class="md:hidden flex gap-4 pb-3 border-t dark:border-gray-800 pt-3">
+                <a  routerLink="/matches"
+                    routerLinkActive="text-blue-600 dark:text-blue-400 font-semibold"
+                    class="flex-1 text-center text-sm text-gray-700 dark:text-gray-300">
+                    Matches
+                </a>
+                <a  routerLink="/standings"
+                    routerLinkActive="text-blue-600 dark:text-blue-400 font-semibold"
+                    class="flex-1 text-center text-sm text-gray-700 dark:text-gray-300">
+                    Standings
+                </a>
+            </nav>
+        </div>
+    </div>
+</header>
