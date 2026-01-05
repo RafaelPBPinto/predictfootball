@@ -166,27 +166,6 @@ public class DataPopulationController {
             List<Team> teams = populationService.populateTeamsForLeague(leagueId, season);
             results.put("teams", "Populated " + teams.size() + " teams");
 
-            // 3. Populate Players for each team
-            int totalPlayers = 0;
-            for (Team team : teams) {
-                try {
-                    List<Player> players = populationService.populatePlayersForTeam(team.getApiFootballId(), season);
-                    totalPlayers += players.size();
-                    Thread.sleep(500); // Avoid rate limiting
-                } catch (Exception e) {
-                    log.warn("Could not populate players for team {}: {}", team.getName(), e.getMessage());
-                }
-            }
-            results.put("players", "Populated " + totalPlayers + " players");
-
-            // 4. Populate Fixtures
-            //List<Fixture> fixtures = populationService.populateFixturesForLeague(leagueId, season);
-            //results.put("fixtures", "Populated " + fixtures.size() + " fixtures");
-
-            // 5. Populate Standings
-            //List<Standing> standings = populationService.populateStandingsForLeague(leagueId, season);
-            //results.put("standings", "Populated " + standings.size() + " standings");
-
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Full league population completed");

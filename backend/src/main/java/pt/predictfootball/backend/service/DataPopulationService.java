@@ -146,13 +146,11 @@ public class DataPopulationService {
         }
 
         String position = null;
-        Integer number = null;
 
         if (dto.getStatistics() != null && !dto.getStatistics().isEmpty()) {
             PlayerDTO.Statistic stat = dto.getStatistics().getFirst();
             if (stat.getGames() != null) {
                 position = stat.getGames().getPosition();
-                number = stat.getGames().getNumber();
             }
         }
 
