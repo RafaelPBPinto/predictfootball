@@ -16,6 +16,13 @@ export const matchesApi = {
     return data;
   },
 
+  getByTeamId: async (teamId: number) => {
+    const { data } = await apiClient.get<MatchResponse[]>("/matches", {
+      params: { teamId },
+    });
+    return data;
+  },
+
   getById: async (id: number) => {
     const { data } = await apiClient.get<MatchResponse>(`/matches/${id}`);
     return data;

@@ -1,6 +1,7 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { useCompetition } from "@/hooks/use-competitions";
 import { useSeasons, useCurrentSeason } from "@/hooks/use-seasons";
 import { useStandings } from "@/hooks/use-standings";
@@ -8,10 +9,34 @@ import { useMatchesBySeason } from "@/hooks/use-matches";
 import { StandingsTable } from "@/components/standings/standings-table";
 import { MatchCard } from "@/components/match/match-card";
 import { SeasonSelector } from "@/components/ui/season-selector";
+import { Tabs } from "@/components/ui/tabs";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
-import Image from "next/image";
+import { MatchResponse } from "@/types";
+
+const competitionTabs = [
+  { key: "standings", label: "Standings" },
+  { key: "matches", label: "Matches" },
+];
+
+interface MatchdayGroup {
+  matchday: number | null;
+  matches: MatchResponse[];
+}
+
+function groupByMatchday(matches: MatchResponse[]): MatchdayGroup[] {
+  const map = new Map<number | null, MatchResponse[]>();
+  for (const m of matches) {
+    const key = m.matchday;
+    const existing = map.get(key);
+    if (existing) existing.push(m);
+    else map.set(key, [m]);
+  }
+  return Array.from(map.entries())
+    .map(([matchday, matches]) => ({ matchday, matches }))
+    .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0));
+}
 
 export default function CompetitionPage({
   params,
@@ -21,6 +46,7 @@ export default function CompetitionPage({
   const { id } = use(params);
   const competitionId = Number(id);
   const [selectedSeasonId, setSelectedSeasonId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState("standings");
 
   const { data: competition } = useCompetition(competitionId);
   const { data: currentSeason } = useCurrentSeason(competitionId);
@@ -46,45 +72,65 @@ export default function CompetitionPage({
     refetch: refetchMatches,
   } = useMatchesBySeason(selectedSeasonId!);
 
-  const recentMatches = matches
-    ?.filter((m) => m.status === "FINISHED")
-    .sort((a, b) => new Date(b.kickoff).getTime() - new Date(a.kickoff).getTime())
-    .slice(0, 10);
+  const matchdayGroups = useMemo(
+    () => (matches ? groupByMatchday(matches) : []),
+    [matches]
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {competition?.logoUrl ? (
-            <Image
-              src={competition.logoUrl}
-              alt={competition.name}
-              width={32}
-              height={32}
-              className="h-8 w-8 object-contain"
+    <div className="space-y-4">
+      {/* Header Banner */}
+      <div className="overflow-hidden rounded-xl border border-border bg-bg-card">
+        <div className="flex items-center justify-between p-5 pb-4">
+          <div className="flex items-center gap-3">
+            {competition?.logoUrl ? (
+              <Image
+                src={competition.logoUrl}
+                alt={competition.name}
+                width={48}
+                height={48}
+                className="h-12 w-12 object-contain"
+              />
+            ) : (
+              <div className="h-12 w-12 rounded-lg bg-bg-elevated" />
+            )}
+            <div>
+              <h1 className="text-xl font-bold text-text-primary">
+                {competition?.name || "Competition"}
+              </h1>
+              {competition?.country && (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  {competition.country.flagUrl && (
+                    <Image
+                      src={competition.country.flagUrl}
+                      alt={competition.country.name}
+                      width={14}
+                      height={14}
+                      className="h-3.5 w-3.5 rounded-sm object-cover"
+                    />
+                  )}
+                  <span className="text-xs text-text-muted">{competition.country.name}</span>
+                </div>
+              )}
+            </div>
+          </div>
+          {seasons && selectedSeasonId && (
+            <SeasonSelector
+              seasons={seasons}
+              selectedSeasonId={selectedSeasonId}
+              onSeasonChange={setSelectedSeasonId}
             />
-          ) : (
-            <div className="h-8 w-8 rounded bg-bg-secondary" />
           )}
-          <h1 className="text-2xl font-bold text-text-primary">
-            {competition?.name || "Competition"}
-          </h1>
         </div>
-        {seasons && selectedSeasonId && (
-          <SeasonSelector
-            seasons={seasons}
-            selectedSeasonId={selectedSeasonId}
-            onSeasonChange={setSelectedSeasonId}
-          />
-        )}
+        <div className="border-t border-border">
+          <Tabs tabs={competitionTabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
+      {/* Standings Tab */}
+      {activeTab === "standings" && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-muted">
-            Standings
-          </h2>
-          {standingsLoading && <LoadingSkeleton rows={20} />}
+          {standingsLoading && <LoadingSkeleton rows={20} variant="table" />}
           {standingsError && (
             <ErrorState
               message="Failed to load standings"
@@ -98,30 +144,37 @@ export default function CompetitionPage({
             <StandingsTable standings={standings} />
           )}
         </div>
+      )}
 
-        <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-muted">
-            Recent Results
-          </h2>
-          {matchesLoading && <LoadingSkeleton rows={10} />}
+      {/* Matches Tab */}
+      {activeTab === "matches" && (
+        <div className="space-y-3">
+          {matchesLoading && <LoadingSkeleton rows={10} variant="match-list" />}
           {matchesError && (
             <ErrorState
               message="Failed to load matches"
               onRetry={() => refetchMatches()}
             />
           )}
-          {!matchesLoading && !matchesError && (!recentMatches || recentMatches.length === 0) && (
-            <EmptyState message="No recent results" />
+          {!matchesLoading && !matchesError && matchdayGroups.length === 0 && (
+            <EmptyState message="No matches available" />
           )}
-          {recentMatches && recentMatches.length > 0 && (
-            <div className="divide-y divide-border rounded-xl border border-border bg-bg-card">
-              {recentMatches.map((match) => (
-                <MatchCard key={match.id} match={match} />
-              ))}
+          {matchdayGroups.map((group) => (
+            <div key={group.matchday ?? "none"} className="overflow-hidden rounded-xl border border-border bg-bg-card">
+              <div className="border-b border-border px-3 py-2">
+                <span className="text-xs font-semibold text-text-muted">
+                  {group.matchday ? `Matchday ${group.matchday}` : "Unscheduled"}
+                </span>
+              </div>
+              <div className="divide-y divide-border">
+                {group.matches.map((match) => (
+                  <MatchCard key={match.id} match={match} />
+                ))}
+              </div>
             </div>
-          )}
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }

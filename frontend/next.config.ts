@@ -8,6 +8,20 @@ const nextConfig: NextConfig = {
         hostname: "media.api-sports.io",
         pathname: "/football/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.sofascore.com",
+        pathname: "/api/v1/**",
+      },
+      {
+        protocol: "https",
+        hostname: "flagcdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "a.espncdn.com",
+        pathname: "/i/headshots/soccer/players/**",
+      },
     ],
   },
 };

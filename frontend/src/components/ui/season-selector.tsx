@@ -21,7 +21,7 @@ export function SeasonSelector({
     <select
       value={selectedSeasonId}
       onChange={(e) => onSeasonChange(Number(e.target.value))}
-      className="rounded-lg border border-border bg-bg-card px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
+      className="rounded-full border border-border bg-bg-card px-3 py-1 text-xs font-medium text-text-primary focus:border-accent focus:outline-none"
     >
       {seasons.map((season) => (
         <option key={season.id} value={season.id}>

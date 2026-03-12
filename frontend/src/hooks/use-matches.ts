@@ -16,3 +16,19 @@ export function useMatchesBySeason(seasonId: number) {
     enabled: !!seasonId,
   });
 }
+
+export function useMatchesByTeam(teamId: number) {
+  return useQuery({
+    queryKey: ["matches", { teamId }],
+    queryFn: () => matchesApi.getByTeamId(teamId),
+    enabled: !!teamId,
+  });
+}
+
+export function useMatch(id: number) {
+  return useQuery({
+    queryKey: ["matches", id],
+    queryFn: () => matchesApi.getById(id),
+    enabled: !!id,
+  });
+}

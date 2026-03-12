@@ -3,11 +3,12 @@
 import { useState, useMemo } from "react";
 import { useMatchesByDate } from "@/hooks/use-matches";
 import { MatchResponse } from "@/types";
-import { DateNavigator } from "@/components/ui/date-navigator";
+import { DateStrip } from "@/components/ui/date-strip";
 import { MatchCardGroup } from "@/components/match/match-card-group";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FiCalendar } from "react-icons/fi";
 
 function todayString(): string {
   return new Date().toISOString().split("T")[0];
@@ -50,10 +51,10 @@ export default function HomePage() {
   );
 
   return (
-    <div className="space-y-6">
-      <DateNavigator date={date} onDateChange={setDate} />
+    <div className="space-y-4">
+      <DateStrip date={date} onDateChange={setDate} />
 
-      {isLoading && <LoadingSkeleton rows={8} />}
+      {isLoading && <LoadingSkeleton rows={6} variant="match-list" />}
 
       {isError && (
         <ErrorState
@@ -63,18 +64,20 @@ export default function HomePage() {
       )}
 
       {!isLoading && !isError && groups.length === 0 && (
-        <EmptyState message="No matches on this date" />
+        <EmptyState message="No matches on this date" icon={FiCalendar} />
       )}
 
-      {groups.map((group) => (
-        <MatchCardGroup
-          key={group.competitionId}
-          competitionId={group.competitionId}
-          competitionName={group.competitionName}
-          competitionLogoUrl={group.competitionLogoUrl}
-          matches={group.matches}
-        />
-      ))}
+      <div className="space-y-3">
+        {groups.map((group) => (
+          <MatchCardGroup
+            key={group.competitionId}
+            competitionId={group.competitionId}
+            competitionName={group.competitionName}
+            competitionLogoUrl={group.competitionLogoUrl}
+            matches={group.matches}
+          />
+        ))}
+      </div>
     </div>
   );
 }
