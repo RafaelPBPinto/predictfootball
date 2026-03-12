@@ -1,19 +1,17 @@
-import { League } from "./league";
-import { Team } from "./team";
+import { TeamResponse } from "./team";
 
-export interface Standing {
-    id: number;
-    team: Team;
-    league: League;
-    rank: number;
-    playedGames: number;
-    won: number;
-    draw: number;
-    lost: number;
-    points: number;
-    goalsFor: number;
-    goalsAgainst: number;
-    goalDifference: number;
-    form: string;
-    lastUpdated: Date;
+export interface StandingResponse {
+  id: number;
+  seasonId: number;
+  team: TeamResponse;
+  position: number;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+  form: string | null;
 }

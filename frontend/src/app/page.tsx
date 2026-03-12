@@ -1,29 +1,80 @@
-import { fixturesApi } from '@/src/api/fixtures';
-import FixtureList from '@/src/components/fixtures/FixtureList';
-import { Fixture } from '@/src/types/fixture';
+"use client";
 
-export default async function Home() {
-  let fixtures: Fixture[] = [];
-  let error = null;
+import { useState, useMemo } from "react";
+import { useMatchesByDate } from "@/hooks/use-matches";
+import { MatchResponse } from "@/types";
+import { DateNavigator } from "@/components/ui/date-navigator";
+import { MatchCardGroup } from "@/components/match/match-card-group";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
 
-  try {
-    fixtures = await fixturesApi.getAll();
-  } catch (err) {
-    error = 'Failed to load fixtures';
-    console.error(err);
+function todayString(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+interface CompetitionGroup {
+  competitionId: number;
+  competitionName: string;
+  competitionLogoUrl: string | null;
+  matches: MatchResponse[];
+}
+
+function groupByCompetition(matches: MatchResponse[]): CompetitionGroup[] {
+  const map = new Map<number, CompetitionGroup>();
+
+  for (const match of matches) {
+    const existing = map.get(match.competitionId);
+    if (existing) {
+      existing.matches.push(match);
+    } else {
+      map.set(match.competitionId, {
+        competitionId: match.competitionId,
+        competitionName: match.competitionName,
+        competitionLogoUrl: match.competitionLogoUrl,
+        matches: [match],
+      });
+    }
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">{error}</p>
-      </div>
-    );
-  }
+  return Array.from(map.values());
+}
+
+export default function HomePage() {
+  const [date, setDate] = useState(todayString);
+  const { data: matches, isLoading, isError, refetch } = useMatchesByDate(date);
+
+  const groups = useMemo(
+    () => (matches ? groupByCompetition(matches) : []),
+    [matches]
+  );
 
   return (
-    <main>
-      <FixtureList initialFixtures={fixtures} />
-    </main>
+    <div className="space-y-6">
+      <DateNavigator date={date} onDateChange={setDate} />
+
+      {isLoading && <LoadingSkeleton rows={8} />}
+
+      {isError && (
+        <ErrorState
+          message="Failed to load matches"
+          onRetry={() => refetch()}
+        />
+      )}
+
+      {!isLoading && !isError && groups.length === 0 && (
+        <EmptyState message="No matches on this date" />
+      )}
+
+      {groups.map((group) => (
+        <MatchCardGroup
+          key={group.competitionId}
+          competitionId={group.competitionId}
+          competitionName={group.competitionName}
+          competitionLogoUrl={group.competitionLogoUrl}
+          matches={group.matches}
+        />
+      ))}
+    </div>
   );
 }
