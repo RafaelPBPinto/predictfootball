@@ -41,6 +41,13 @@ public class MatchService {
                 .toList();
     }
 
+    public List<MatchResponse> findByDate(LocalDate date) {
+        return matchRepository.findByKickoffBetween(
+                        date.atStartOfDay(), date.plusDays(1).atStartOfDay()).stream()
+                .map(MatchMapper::toResponse)
+                .toList();
+    }
+
     public List<MatchResponse> findByTeamId(Long teamId) {
         return matchRepository.findByHomeTeamIdOrAwayTeamId(teamId, teamId).stream()
                 .map(MatchMapper::toResponse)

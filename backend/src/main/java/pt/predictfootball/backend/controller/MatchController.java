@@ -37,6 +37,9 @@ public class MatchController {
         if (teamId != null) {
             return matchService.findByTeamId(teamId);
         }
+        if (date != null) {
+            return matchService.findByDate(date);
+        }
         return matchService.findAll();
     }
 

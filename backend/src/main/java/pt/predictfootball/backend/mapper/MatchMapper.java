@@ -9,9 +9,13 @@ public class MatchMapper {
 
     public static MatchResponse toResponse(Match match) {
         if (match == null) return null;
+        var competition = match.getSeason().getCompetition();
         return MatchResponse.builder()
                 .id(match.getId())
                 .seasonId(match.getSeason().getId())
+                .competitionId(competition.getId())
+                .competitionName(competition.getName())
+                .competitionLogoUrl(competition.getLogoUrl())
                 .matchday(match.getMatchday())
                 .homeTeam(TeamMapper.toResponse(match.getHomeTeam()))
                 .awayTeam(TeamMapper.toResponse(match.getAwayTeam()))

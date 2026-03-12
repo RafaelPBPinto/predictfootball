@@ -15,5 +15,7 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     List<Match> findByHomeTeamIdOrAwayTeamId(Long homeTeamId, Long awayTeamId);
 
+    List<Match> findByKickoffBetween(LocalDateTime start, LocalDateTime end);
+
     Optional<Match> findByExternalId(String externalId);
 }
